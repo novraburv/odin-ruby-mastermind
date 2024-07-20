@@ -2,6 +2,7 @@
 
 require_relative 'code_breaker'
 require_relative 'code_maker'
+require_relative 'helpers'
 
 # control game loop
 class Game
@@ -14,19 +15,23 @@ class Game
   end
 
   def start
-    select_role
+    Helpers.select_role
     create_code
+    commence_loops
+  end
+
+  private
+
+  def commence_loops
     12.times do
       break_the_code
-      result = evaluate(@maker, @breaker)
+      result = Helpers.evaluate(@maker, @breaker)
       puts result.join(' ')
       if result.length == 4 && result.all? { |x| x == 'black' }
         puts 'congratulations, you won'
         break
-      else
-        puts 'incorrect! try again.'
-        @breaker.reset
       end
+      puts 'incorrect! try again.'
     end
   end
 
@@ -39,6 +44,8 @@ class Game
   end
 
   def break_the_code
+    # reset previous guess
+    @breaker.reset
     puts 'break the code'
     puts 'use a combination of four colors'
     puts "available colors #{COLORS}"
@@ -51,33 +58,5 @@ class Game
     puts 'generating code...'
     code = COLORS.sample(4).shuffle
     @maker.add_color code
-  end
-
-  # helper functions
-  def select_role
-    puts 'Will you be the Code Maker or the Code Breaker'
-    puts 'enter "MAKER" or "BREAKER"'
-    choice = gets.chomp.upcase
-    if %w[MAKER BREAKER].include?(choice)
-      @player_role = choice
-    else
-      puts 'try again...'
-      select_role
-    end
-  end
-
-  def evaluate(codemaker, codebreaker)
-    code = codemaker.code
-    guess = codebreaker.guess
-    result = []
-
-    code.each_index do |i|
-      if code[i] == guess[i]
-        result << 'black'
-      elsif guess.include? code[i]
-        result << 'white'
-      end
-    end
-    result.sort
   end
 end
