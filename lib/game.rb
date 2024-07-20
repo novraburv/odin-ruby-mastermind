@@ -15,7 +15,7 @@ class Game
   end
 
   def start
-    Helpers.select_role
+    select_role
     create_code
     commence_loops
   end
@@ -25,7 +25,7 @@ class Game
   def commence_loops
     12.times do
       break_the_code
-      result = Helpers.evaluate(@maker, @breaker)
+      result = evaluate(@maker, @breaker)
       puts result.join(' ')
       if result.length == 4 && result.all? { |x| x == 'black' }
         puts 'congratulations, you won'
@@ -58,5 +58,31 @@ class Game
     puts 'generating code...'
     code = COLORS.sample(4).shuffle
     @maker.add_color code
+  end
+
+  # helpers
+
+  def select_role
+    puts 'Will you be the Code Maker or the Code Breaker'
+    puts 'enter "MAKER" or "BREAKER"'
+    choice = gets.chomp.upcase
+    if %w[MAKER BREAKER].include?(choice)
+      @player_role = choice
+    else
+      puts 'try again...'
+      select_role
+    end
+  end
+
+  def evaluate(codemaker, codebreaker)
+    result = []
+    codemaker.code.each_index do |i|
+      if codemaker.code[i] == codebreaker.guess[i]
+        result << 'black'
+      elsif codebreaker.guess.include?(codemaker.code[i])
+        result << 'white'
+      end
+    end
+    result.sort
   end
 end
