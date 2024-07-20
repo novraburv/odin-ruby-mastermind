@@ -2,7 +2,6 @@
 
 require_relative 'code_breaker'
 require_relative 'code_maker'
-require_relative 'helpers'
 
 # control game loop
 class Game
@@ -16,27 +15,31 @@ class Game
 
   def start
     select_role
-    create_code
+    @player_role == 'MAKER' ? create_code : generate_code
     commence_loops
   end
 
   private
 
-  def commence_loops
+  def commence_loops # rubocop:disable Metrics/MethodLength
+    i = 0
     12.times do
       break_the_code
       result = evaluate(@maker, @breaker)
       puts result.join(' ')
       if result.length == 4 && result.all? { |x| x == 'black' }
-        puts 'congratulations, you won'
+        puts 'CONGRATULATIONS! YOU WON.'
         break
       end
-      puts 'incorrect! try again.'
+      i += 1
+      puts "Incorrect! Try again. Retry: #{12 - i} left."
     end
+    puts 'YOU LOST.'
   end
 
   # this section is for player
   def create_code
+    puts 'CREATE THE CODE'
     puts 'create a combination of four colors'
     puts "available colors #{COLORS}"
     code = gets.chomp.split(' ').map(&:to_sym)
@@ -46,7 +49,7 @@ class Game
   def break_the_code
     # reset previous guess
     @breaker.reset
-    puts 'break the code'
+    puts 'BREAK THE CODE'
     puts 'use a combination of four colors'
     puts "available colors #{COLORS}"
     code = gets.chomp.split(' ').map(&:to_sym)
@@ -55,7 +58,7 @@ class Game
 
   # this section is for cpu
   def generate_code
-    puts 'generating code...'
+    puts 'generating random code...'
     code = COLORS.sample(4).shuffle
     @maker.add_color code
   end
